@@ -1,0 +1,217 @@
+
+<style>
+
+html,
+body{
+
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    color: white;
+}
+
+canvas{
+
+    display: block;
+}
+
+#ui {
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
+  text-align: center;
+  font-size: 18px;
+}
+#topRight {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 18px;
+}
+#equation {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+.opBtn {
+  font-size: 16px;
+  padding: 8px 12px;
+  margin: 2px;
+  background: #222;
+  color: white;
+  border: 1px solid white;
+  cursor: pointer;
+}
+.opBtn:hover { background: #444; }
+input, select {
+  font-size: 16px;
+  padding: 6px;
+  margin: 2px;
+  color: white;
+  background: #111;
+  border: 1px solid white;
+}
+#inputDisplay {
+  margin-top: 10px;
+}
+
+</style>
+
+<canvas id="game"></canvas>
+
+<div id="topRight">
+  <div>Record: <span id="record">0</span></div>
+  <div>Tier: <span id="tierDisplay">1</span></div>
+</div>
+
+<div id="ui">
+  <div>
+    <span id="equation"></span>
+    <button class="opBtn" onclick="EquationSystem.resetInput(); EquationSystem.newEquation(); HUDSystem.renderEquation();">↻</button>
+  </div>
+
+  <div id="solved">Solved: 0</div>
+  <div id="kills">Kills: 0</div>
+
+  <div style="margin-top: 10px;">
+    <label style="margin-right: 20px;"><input id="inputVar" type="checkbox"> x</label>
+    <span id="inputDisplay">Input:</span>
+  </div>
+
+  <div style="margin-top: 10px;">
+    <button class="opBtn" onclick="EquationSystem.selectOp('+')">+ (A)</button>
+    <button class="opBtn" onclick="EquationSystem.selectOp('-')">- (S)</button>
+    <button class="opBtn" onclick="EquationSystem.selectOp('/')">÷ (D)</button>
+    <button class="opBtn" onclick="EquationSystem.selectOp('*')">× (W)</button>
+  </div>
+
+  <div style="margin-top: 8px;">Enter / Space = CAST, X = toggle x, Q = distribute, E = combine</div>
+</div>
+
+<script>
+
+const canvas = document.getElementById("game");
+
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+
+canvas.height = window.innerHeight;
+
+window.canvas = canvas;
+window.ctx = ctx;
+
+</script>
+
+<script src="combo_camera.js"></script>
+<script src="arena.js"></script>
+<script src="enemies.js"></script>
+
+<script src="pressure.js"></script>
+
+<script src="equation.js"></script>
+<script src="hud.js"></script>
+
+<script>
+
+ctx.fillStyle = "red";
+
+ctx.fillRect(
+    50,
+    100,
+    200,
+    200
+);
+
+const combatPlayer =
+    CombatSystem.getPlayer();
+
+ArenaSystem.setPlayerReference(
+    combatPlayer
+);
+
+EnemySystem.setPlayerReference(
+    combatPlayer
+);
+
+CombatSystem.setEnemyReference(
+    EnemySystem.getEnemies()
+);
+
+CombatSystem.setLaunchEnemyReference(
+    EnemySystem.launchEnemy
+);
+
+
+function update(){
+
+  CombatSystem.update();
+
+  EnemySystem.updateEnemies();
+
+
+  PressureSystem.pressureUpdate();
+
+
+  ArenaSystem.updateArenaBoundaries();
+
+}
+
+function draw(){
+
+    let cameraX =
+        CombatSystem.getCameraX();
+
+    ctx.fillStyle = "black";
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    ArenaSystem.drawWorld();
+
+    ArenaSystem.drawArena(cameraX);
+
+    EnemySystem.drawEnemies(cameraX);
+    
+    CombatSystem.drawPlayer();
+
+    CombatSystem.drawCombatTexts();
+
+
+    PressureSystem.pressureDraw();
+}
+
+function loop(){
+
+    update();
+
+    draw();
+
+    requestAnimationFrame(
+        loop
+    );
+
+    
+}
+
+EnemySystem.spawnWave();
+
+
+PressureSystem.pressureInitialize();
+
+
+EquationSystem.initialize();
+
+HUDSystem.renderEquation();
+
+HUDSystem.updateUI();
+
+HUDSystem.initializeInput();
+
+loop();
+
+
+</script>
